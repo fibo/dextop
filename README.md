@@ -80,8 +80,8 @@ The following events are emitted:
 
 | name     | data             |
 |----------|------------------|
-| `move`   | { top, left }    |
-| `resize` | { link, linkId } |
+| move   | `{ top, left }`    |
+| resize | `{ link, linkId }` |
 
 ## License
 
