@@ -1,0 +1,44 @@
+{
+  "name": "dextop",
+  "version": "0.0.0",
+  "description": "is a window manager running in your browser",
+  "main": "dextop.js",
+  "scripts": {
+    "browserify": "NODE_ENV=production browserify -r ./${npm_package_name}.js:${npm_package_name} -o dist/${npm_package_name}.js",
+    "build": "npm run browserify && npm run minify",
+    "lint": "standa *.js",
+    "minify": "cd dist; uglifyjs ${npm_package_name}.js --source-map --output ${npm_package_name}.min.js --compress --mangle -b beautify=false,preamble='\"// http://g14n.info/dextop\"'; cd -",
+    "postversion": "git push origin v${npm_package_version}; npm publish",
+    "start": "NODE_PATH=. budo --open example.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "pre-commit": [
+    "lint"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fibo/dextop.git"
+  },
+  "keywords": [
+    "minimal",
+    "window-manager",
+    "vanillajs"
+  ],
+  "author": "Gianluca Casati (http://g14n.info)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fibo/dextop/issues"
+  },
+  "homepage": "http://g14n.info/dextop",
+  "devDependencies": {
+    "budo": "^10.0.4",
+    "dot-editorconfig": "^1.0.1",
+    "pre-commit": "^1.2.2",
+    "standa": "^1.1.0",
+    "uglify-es": "^3.2.1"
+  },
+  "dependencies": {
+    "bindme": "^1.0.1",
+    "events": "^1.1.1"
+  }
+}
