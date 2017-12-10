@@ -15,7 +15,7 @@ Try [Codepen demo](https://codepen.io/fibo/full/xPomej/), or
 Start with an empty div in your HTML, for example
 
 ```html
-<div id="my-dextop"></div>
+<div id="my-dextop-window"></div>
 ```
 
 To import `DextopWindow` choose your favourite syntax among:
@@ -26,7 +26,7 @@ To import `DextopWindow` choose your favourite syntax among:
 Create a dextop window instance, add some content.
 
 ```javascript
-const myDiv = document.querySelector('#my-dextop')
+const myDiv = document.querySelector('#my-dextop-window')
 
 const dextopWin = new DextopWindow(myDiv, { width: 400, height: 200 })
 
