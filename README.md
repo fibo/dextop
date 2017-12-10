@@ -76,7 +76,7 @@ dextop.on('move', ({ top, left }) => {
 })
 ```
 
-The following events are emitted by [canvas](#canvas):
+The following events are emitted:
 
 | name     | data             |
 |----------|------------------|
