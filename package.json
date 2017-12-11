@@ -8,7 +8,7 @@
     "build": "npm run browserify && npm run minify",
     "lint": "standa *.js",
     "minify": "cd dist; uglifyjs ${npm_package_name}.js --source-map --output ${npm_package_name}.min.js --compress --mangle -b beautify=false,preamble='\"// http://g14n.info/dextop\"'; cd -",
-    "postversion": "git push origin v${npm_package_version}; npm publish",
+    "postversion": "git push origin v${npm_package_version}; npm publish; git push origin master",
     "start": "NODE_PATH=. budo --open example.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
