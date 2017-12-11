@@ -22,18 +22,20 @@ class DextopWindow extends EventEmitter {
     element.style.border = `${border}px solid transparent`
     element.style.position = 'absolute'
 
+    const content = document.createElement('div')
+    const resizer = document.createElement('div')
     const toolbar = document.createElement('div')
+
     toolbar.classList.add('dextop-toolbar')
     toolbar.style['background-color'] = 'transparent'
     toolbar.style.cursor = 'move'
     toolbar.style.height = `${toolbarHeight}px`
-    element.appendChild(toolbar)
 
-    const content = document.createElement('div')
+    content.style.position = 'absolute'
+    content.style.left = 0
+    content.style.top = `${toolbarHeight}px`
     content.classList.add('dextop-content')
-    element.appendChild(content)
 
-    const resizer = document.createElement('div')
     resizer.style['background-color'] = 'transparent'
     resizer.style['border-radius'] = '50%'
     resizer.style.cursor = 'move'
@@ -41,6 +43,8 @@ class DextopWindow extends EventEmitter {
     resizer.style.height = `${resizerSize}px`
     resizer.style.width = `${resizerSize}px`
 
+    element.appendChild(content)
+    element.appendChild(toolbar)
     element.appendChild(resizer)
 
     this.border = border
@@ -69,13 +73,13 @@ class DextopWindow extends EventEmitter {
   }
 
   getDimensions () {
-    const { border, toolbarHeight } = this
+    const { element, toolbarHeight } = this
 
-    const { width, height } = this.element.style
+    const { width, height } = element.style
 
     return {
-      width: parseInt(width, 10) - border * 2,
-      height: parseInt(height, 10) - toolbarHeight - border * 2
+      width: parseInt(width, 10),
+      height: parseInt(height, 10) - toolbarHeight
     }
   }
 
@@ -174,9 +178,9 @@ class DextopWindow extends EventEmitter {
   onWindowMouseEnter (event) {
     event.preventDefault()
 
-    const color = this.color
+    const { border, color } = this
 
-    this.element.style.border = `1px solid ${color}`
+    this.element.style.border = `${border}px solid ${color}`
     this.resizer.style['background-color'] = color
     this.toolbar.style['background-color'] = color
   }
@@ -184,7 +188,9 @@ class DextopWindow extends EventEmitter {
   onWindowMouseLeave (event) {
     event.preventDefault()
 
-    this.element.style.border = '1px solid transparent'
+    const { border } = this
+
+    this.element.style.border = `${border}px solid transparent`
     this.resizer.style['background-color'] = 'transparent'
     this.toolbar.style['background-color'] = 'transparent'
   }
@@ -213,21 +219,18 @@ class DextopWindow extends EventEmitter {
     if (width < toolbarHeight) width = toolbarHeight
     if (height < toolbarHeight) height = toolbarHeight
 
-    const windowHeight = height + toolbarHeight + 2 * border
-    const windowWidth = width + 2 * border
-
-    element.style.height = `${windowHeight}px`
-    element.style.width = `${windowWidth}px`
+    element.style.height = `${height + toolbarHeight}px`
+    element.style.width = `${width}px`
 
     content.style.height = `${height}px`
     content.style.width = `${width}px`
 
-    resizer.style.left = `${windowWidth - (resizerSize / 2)}px`
-    resizer.style.top = `${windowHeight - (resizerSize / 2)}px`
+    resizer.style.left = `${width + border - (resizerSize / 2)}px`
+    resizer.style.top = `${height + border + toolbarHeight - (resizerSize / 2)}px`
   }
 
   setPosition ({top, left}) {
-    const element = this.element
+    const { element } = this
 
     const { width, height } = this.getDimensions()
 
