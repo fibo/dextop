@@ -3,6 +3,7 @@ const EventEmitter = require('events').EventEmitter
 
 class DextopWindow extends EventEmitter {
   constructor (element, {
+    border = 1,
     color = 'rgba(0, 0, 0, 0.1)',
     width = 400, height = 300,
     top = 0, left = 0,
@@ -18,9 +19,7 @@ class DextopWindow extends EventEmitter {
     )
 
     element.style['background-color'] = 'transparent'
-    element.style.border = '1px solid transparent'
-    element.style.height = `${height}px`
-    element.style.width = `${width}px`
+    element.style.border = `${border}px solid transparent`
     element.style.position = 'absolute'
 
     const toolbar = document.createElement('div')
@@ -44,6 +43,7 @@ class DextopWindow extends EventEmitter {
 
     element.appendChild(resizer)
 
+    this.border = border
     this.color = color
     this.content = content
     this.element = element
@@ -69,9 +69,14 @@ class DextopWindow extends EventEmitter {
   }
 
   getDimensions () {
+    const { border, toolbarHeight } = this
+
     const { width, height } = this.element.style
 
-    return { width: parseInt(width, 10), height: parseInt(height, 10) }
+    return {
+      width: parseInt(width, 10) - border * 2,
+      height: parseInt(height, 10) - toolbarHeight - border * 2
+    }
   }
 
   getPosition () {
@@ -184,20 +189,41 @@ class DextopWindow extends EventEmitter {
     this.toolbar.style['background-color'] = 'transparent'
   }
 
-  setDimensions ({width, height}) {
-    const { element, resizer, resizerSize } = this
+  removeDraggingListeners () {
+    const toolbar = this.toolbar
 
-    const minDim = 100
+    toolbar.onmousemove = null
+    toolbar.onmouseup = null
+  }
+
+  removeResizingListeners () {
+    const resizer = this.resizer
+
+    resizer.onmousemove = null
+    resizer.onmouseup = null
+  }
+
+  setDimensions ({width, height}) {
+    const {
+      content, element, resizer,
+      border, resizerSize, toolbarHeight
+    } = this
 
     // Do not resize too much.
-    if (width < minDim) width = minDim
-    if (height < minDim) height = minDim
+    if (width < toolbarHeight) width = toolbarHeight
+    if (height < toolbarHeight) height = toolbarHeight
 
-    element.style.width = `${width}px`
-    element.style.height = `${height}px`
+    const windowHeight = height + toolbarHeight + 2 * border
+    const windowWidth = width + 2 * border
 
-    resizer.style.top = `${height - (resizerSize / 2)}px`
-    resizer.style.left = `${width - (resizerSize / 2)}px`
+    element.style.height = `${windowHeight}px`
+    element.style.width = `${windowWidth}px`
+
+    content.style.height = `${height}px`
+    content.style.width = `${width}px`
+
+    resizer.style.left = `${windowWidth - (resizerSize / 2)}px`
+    resizer.style.top = `${windowHeight - (resizerSize / 2)}px`
   }
 
   setPosition ({top, left}) {
@@ -218,20 +244,6 @@ class DextopWindow extends EventEmitter {
 
     element.style.top = `${top}px`
     element.style.left = `${left}px`
-  }
-
-  removeDraggingListeners () {
-    const toolbar = this.toolbar
-
-    toolbar.onmousemove = null
-    toolbar.onmouseup = null
-  }
-
-  removeResizingListeners () {
-    const resizer = this.resizer
-
-    resizer.onmousemove = null
-    resizer.onmouseup = null
   }
 
   stopDragging () {

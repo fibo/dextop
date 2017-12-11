@@ -44,6 +44,7 @@ First constructor argument is a DOM element, second argument is an object to pro
 | color         | `'rgba(0, 0, 0, 0.1)'` |
 | top           | `0`                    |
 | left          | `0`                    |
+| border        | `1`                    |
 | resizerSize   | `35`                   |
 | toolbarHeight | `28`                   |
 
