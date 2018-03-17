@@ -79,12 +79,11 @@ dextop.on('move', ({ top, left }) => {
 
 The following events are emitted:
 
-| name     | data             |
-|----------|------------------|
-| move   | `{ top, left }`    |
-| resize | `{ link, linkId }` |
+| name   | data                |
+|--------|---------------------|
+| move   | `{ top, left }`     |
+| resize | `{ width, height }` |
 
-## License
+## License 
 
 [MIT](http://g14n.info/mit-license/)
-
