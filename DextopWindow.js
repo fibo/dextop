@@ -1,268 +1,212 @@
 const bindme = require('bindme')
 const EventEmitter = require('events').EventEmitter
+const pdsp = require('pdsp')
+const staticProps = require('static-props')
 
 class DextopWindow extends EventEmitter {
-  constructor (element, {
+  constructor (container, {
     border = 1,
     color = 'rgba(0, 0, 0, 0.1)',
     width = 400, height = 300,
-    top = 0, left = 0,
+    x = 0, y = 0,
     resizerSize = 35,
     toolbarHeight = 28
   }) {
     bindme(super(),
-      'onToolbarMouseDown', 'onToolbarMouseLeave',
-      'onToolbarMouseMove', 'onToolbarMouseUp',
-      'onResizerMouseDown', 'onResizerMouseLeave',
-      'onResizerMouseMove', 'onResizerMouseUp',
-      'onWindowMouseEnter', 'onWindowMouseLeave'
+      'onContainerMouseenter',
+      'onContainerMouseleave',
+      'onResizerMousedown',
+      'onToolbarMousedown',
+      'onWindowMousemove',
+      'onWindowMouseup'
     )
 
-    element.style['background-color'] = 'transparent'
-    element.style.border = `${border}px solid transparent`
-    element.style.position = 'absolute'
+    container.style['background-color'] = 'transparent'
+    container.style.position = 'absolute'
 
     const content = document.createElement('div')
-    const resizer = document.createElement('div')
-    const toolbar = document.createElement('div')
-
-    toolbar.classList.add('dextop-toolbar')
-    toolbar.style['background-color'] = 'transparent'
-    toolbar.style.cursor = 'move'
-    toolbar.style.height = `${toolbarHeight}px`
-
     content.style.position = 'absolute'
     content.style.left = 0
     content.style.top = `${toolbarHeight}px`
     content.classList.add('dextop-content')
+    container.appendChild(content)
 
-    resizer.style['background-color'] = 'transparent'
+    const resizer = document.createElement('div')
     resizer.style['border-radius'] = '50%'
     resizer.style.cursor = 'move'
     resizer.style.position = 'absolute'
     resizer.style.height = `${resizerSize}px`
     resizer.style.width = `${resizerSize}px`
+    container.appendChild(resizer)
 
-    element.appendChild(content)
-    element.appendChild(toolbar)
-    element.appendChild(resizer)
+    const toolbar = document.createElement('div')
+    toolbar.classList.add('dextop-toolbar')
+    toolbar.style.cursor = 'move'
+    toolbar.style.height = `${toolbarHeight}px`
+    container.appendChild(toolbar)
 
     this.border = border
     this.color = color
-    this.content = content
-    this.element = element
-    this.resizer = resizer
-    this.resizerSize = resizerSize
-    this.toolbar = toolbar
-    this.toolbarHeight = toolbarHeight
-
-    this.setDimensions({width, height})
-    this.setPosition({top, left})
-
+    this.isMoving = false
+    this.isResizing = false
     // Store clientX and clientY to compute position on dragging.
     this.previous = {}
+    this.resizerSize = resizerSize
+    this.toolbarHeight = toolbarHeight
+
+    staticProps(this)({
+      container,
+      content,
+      resizer,
+      toolbar
+    })
+
+    // Apply position and dimensions: call first resize(), cause move()
+    // depends on this.size.
+    this.resize({ width, height })
+    this.move({ x, y })
 
     // Events.
 
-    element.onmouseenter = this.onWindowMouseEnter
-    element.onmouseleave = this.onWindowMouseLeave
-    toolbar.onmousedown = this.onToolbarMouseDown
-    toolbar.onmouseleave = this.onToolbarMouseLeave
-    resizer.onmousedown = this.onResizerMouseDown
-    resizer.onmouseleave = this.onResizerMouseLeave
+    container.addEventListener('mouseenter', this.onContainerMouseenter)
+    container.addEventListener('mouseleave', this.onContainerMouseleave)
+
+    toolbar.addEventListener('mousedown', this.onToolbarMousedown)
+
+    resizer.addEventListener('mousedown', this.onResizerMousedown)
+
+    window.addEventListener('mousemove', this.onWindowMousemove)
+    window.addEventListener('mouseup', this.onWindowMouseup)
+
+    // Start hidden.
+    this.hide()
   }
 
-  getDimensions () {
-    const { element, toolbarHeight } = this
-
-    const { width, height } = element.style
-
-    return {
-      width: parseInt(width, 10),
-      height: parseInt(height, 10) - toolbarHeight
-    }
-  }
-
-  getPosition () {
-    const { top, left } = this.element.style
-
-    return { top: parseInt(top, 10), left: parseInt(left, 10) }
-  }
-
-  onResizerMouseDown (event) {
-    event.preventDefault()
-
-    const resizer = this.resizer
-    const { clientX, clientY } = event
-
-    this.previous = { clientX, clientY }
-
-    // Reset handlers.
-    this.stopResizing()
-
-    resizer.onmousemove = this.onResizerMouseMove
-    resizer.onmouseup = this.onResizerMouseUp
-  }
-
-  onResizerMouseLeave (event) {
-    event.preventDefault()
-
-    this.stopResizing()
-  }
-
-  onResizerMouseMove (event) {
-    event.preventDefault()
-
-    const { clientX, clientY } = event
-
-    const previous = this.previous
-
-    const dimension = this.getDimensions()
-
-    const height = dimension.height - (previous.clientY - clientY)
-    const width = dimension.width - (previous.clientX - clientX)
-
-    this.setDimensions({ width, height })
-
-    this.previous = { clientX, clientY }
-  }
-
-  onResizerMouseUp (event) {
-    event.preventDefault()
-
-    this.stopResizing()
-  }
-
-  onToolbarMouseDown (event) {
-    event.preventDefault()
-
-    const toolbar = this.toolbar
-    const { clientX, clientY } = event
-
-    this.previous = { clientX, clientY }
-
-    this.removeDraggingListeners()
-
-    toolbar.onmousemove = this.onToolbarMouseMove
-    toolbar.onmouseup = this.onToolbarMouseUp
-  }
-
-  onToolbarMouseLeave (event) {
-    event.preventDefault()
-
-    this.stopDragging()
-  }
-
-  onToolbarMouseMove (event) {
-    event.preventDefault()
-
-    const { clientX, clientY } = event
-
-    const element = this.element
-    const previous = this.previous
-
-    const top = element.offsetTop - (previous.clientY - clientY)
-    const left = element.offsetLeft - (previous.clientX - clientX)
-
-    this.setPosition({ top, left })
-
-    this.previous = { clientX, clientY }
-  }
-
-  onToolbarMouseUp (event) {
-    event.preventDefault()
-
-    this.stopDragging()
-  }
-
-  onWindowMouseEnter (event) {
-    event.preventDefault()
-
-    const { border, color } = this
-
-    this.element.style.border = `${border}px solid ${color}`
-    this.resizer.style['background-color'] = color
-    this.toolbar.style['background-color'] = color
-  }
-
-  onWindowMouseLeave (event) {
-    event.preventDefault()
-
+  hide () {
     const { border } = this
 
-    this.element.style.border = `${border}px solid transparent`
+    this.container.style.border = `${border}px solid transparent`
     this.resizer.style['background-color'] = 'transparent'
     this.toolbar.style['background-color'] = 'transparent'
   }
 
-  removeDraggingListeners () {
-    const toolbar = this.toolbar
+  onContainerMouseenter () { this.show() }
 
-    toolbar.onmousemove = null
-    toolbar.onmouseup = null
+  onContainerMouseleave () { this.hide() }
+
+  onWindowMousemove (event) {
+    const { isMoving, isResizing } = this
+
+    if (isMoving || isResizing) {
+      const { clientX, clientY } = event
+
+      const { position, previous, size } = this
+
+      const dx = previous.clientX - clientX
+      const dy = previous.clientY - clientY
+
+      if (isMoving) {
+        this.move({
+          x: position.x - dx,
+          y: position.y - dy
+        })
+      }
+
+      if (isResizing) {
+        this.resize({
+          width: size.width - dx,
+          height: size.height - dy
+        })
+      }
+
+      this.previous = { clientX, clientY }
+    }
   }
 
-  removeResizingListeners () {
-    const resizer = this.resizer
-
-    resizer.onmousemove = null
-    resizer.onmouseup = null
+  onWindowMouseup () {
+    this.stopMoving()
+    this.stopResizing()
   }
 
-  setDimensions ({width, height}) {
+  onResizerMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isResizing = true
+    this.previous = { clientX, clientY }
+  }
+
+  onToolbarMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isMoving = true
+    this.previous = { clientX, clientY }
+  }
+
+  move ({x, y}) {
+    const { container } = this
+
+    const { width, height } = this.size
+
+    // Bound position inside browser window.
+
+    const topBound = window.innerHeight - height
+    const top = Math.min(Math.max(y, 0), topBound)
+
+    const leftBound = window.innerWidth - width
+    const left = Math.min(Math.max(x, 0), leftBound)
+
+    container.style.top = `${top}px`
+    container.style.left = `${left}px`
+
+    this.position = { x: left, y: top }
+  }
+
+  resize (size) {
+    const { width, height } = this.size = size
+
     const {
-      content, element, resizer,
+      content, container, resizer,
       border, resizerSize, toolbarHeight
     } = this
 
     // Do not resize too much.
-    if (width < toolbarHeight) width = toolbarHeight
-    if (height < toolbarHeight) height = toolbarHeight
+    const w = Math.max(width, toolbarHeight)
+    const h = Math.max(height, toolbarHeight)
 
-    element.style.height = `${height + toolbarHeight}px`
-    element.style.width = `${width}px`
+    container.style.height = `${h + toolbarHeight}px`
+    container.style.width = `${w}px`
 
-    content.style.height = `${height}px`
-    content.style.width = `${width}px`
+    content.style.height = `${h}px`
+    content.style.width = `${w}px`
 
-    resizer.style.left = `${width + border - (resizerSize / 2)}px`
-    resizer.style.top = `${height + border + toolbarHeight - (resizerSize / 2)}px`
+    resizer.style.left = `${w + border - (resizerSize / 2)}px`
+    resizer.style.top = `${h + border + toolbarHeight - (resizerSize / 2)}px`
   }
 
-  setPosition ({top, left}) {
-    const { element } = this
+  show () {
+    const { border, color } = this
 
-    const { width, height } = this.getDimensions()
-
-    // Bound position inside browser window.
-
-    top = top > 0 ? top : 0
-    left = left > 0 ? left : 0
-
-    const topBound = window.innerHeight - height
-    top = top > topBound ? topBound : top
-
-    const leftBound = window.innerWidth - width
-    left = left > leftBound ? leftBound : left
-
-    element.style.top = `${top}px`
-    element.style.left = `${left}px`
+    this.container.style.border = `${border}px solid ${color}`
+    this.resizer.style['background-color'] = color
+    this.toolbar.style['background-color'] = color
   }
 
-  stopDragging () {
-    this.removeDraggingListeners()
-
-    const { top, left } = this.getPosition()
-
-    this.emit('move', { top, left })
+  stopMoving () {
+    if (this.isMoving) {
+      this.isMoving = false
+      this.emit('move', this.position)
+    }
   }
 
   stopResizing () {
-    this.removeResizingListeners()
-
-    const { width, height } = this.getDimensions()
-
-    this.emit('resize', { width, height })
+    if (this.isResizing) {
+      this.isResizing = false
+      this.emit('resize', this.size)
+    }
   }
 }
 

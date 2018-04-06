@@ -4,9 +4,9 @@
 
 ## Example
 
-Try [Codepen demo](https://codepen.io/fibo/full/xPomej/), or
+Try [Codepen demo] online, or the following locally
 
-1. Clone this repo.
+1. Clone [this repo](https://github.com/fibo/dextop).
 2. Install deps: `npm install`.
 3. Start dev server: `npm start`.
 
@@ -23,7 +23,7 @@ To import `DextopWindow` choose your favourite syntax among:
 * `const DextopWindow = require('dextop').Window`
 * `import { DextopWindow } from 'dextop'`
 
-Create a dextop window instance, add some content.
+Create a **DextopWindow** instance, add some content.
 
 ```javascript
 const myDiv = document.querySelector('#my-dextop-window')
@@ -35,22 +35,23 @@ dextopWin.content.innerHTML = `
 `
 ```
 
-First constructor argument is a DOM element, second argument is an object to provide the following options:
+First constructor argument is a DOM element, second argument is an object
+to provide the following options:
 
 | name          | default                |
 |---------------|------------------------|
 | width         | `400`                  |
 | height        | `300`                  |
 | color         | `'rgba(0, 0, 0, 0.1)'` |
-| top           | `0`                    |
-| left          | `0`                    |
+| x             | `0`                    |
+| y             | `0`                    |
 | border        | `1`                    |
 | resizerSize   | `35`                   |
 | toolbarHeight | `28`                   |
 
 
-The `content` attribute holds a div with class `dextop-content`, you can optionally
-style it with a CSS like the following.
+The `content` attribute holds a div with class `dextop-content`, you can
+optionally style with a CSS like the following.
 
 ```css
 .dextop-content {
@@ -68,12 +69,12 @@ style it with a CSS like the following.
 }
 ```
 
-Class `DextopWindow` inherits from [EventEmitter](https://www.npmjs.com/package/events), it is possible to
-listen to events like in the following snippet.
+Class `DextopWindow` inherits from [EventEmitter], it is possible to listen
+to events like in the following snippet.
 
 ```javascript
-dextop.on('move', ({ top, left }) => {
-  console.log('updated position', left, top)
+dextop.on('move', ({ x, y }) => {
+  console.log('updated position', x, y)
 })
 ```
 
@@ -81,9 +82,12 @@ The following events are emitted:
 
 | name   | data                |
 |--------|---------------------|
-| move   | `{ top, left }`     |
+| move   | `{ x, y }`          |
 | resize | `{ width, height }` |
 
-## License 
+## License
 
 [MIT](http://g14n.info/mit-license/)
+
+[Codepen demo]: https://codepen.io/fibo/full/xPomej/ "Codepen demo"
+[EventEmitter]: https://www.npmjs.com/package/events "EventEmitter"

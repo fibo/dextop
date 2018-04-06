@@ -6,7 +6,7 @@
   "scripts": {
     "browserify": "NODE_ENV=production browserify -r ./${npm_package_name}.js:${npm_package_name} -o dist/${npm_package_name}.js",
     "build": "npm run browserify && npm run minify",
-    "lint": "standa *.js",
+    "lint": "standa --fix *js",
     "minify": "cd dist; uglifyjs ${npm_package_name}.js --source-map --output ${npm_package_name}.min.js --compress --mangle -b beautify=false,preamble='\"// http://g14n.info/dextop\"'; cd -",
     "postversion": "git push origin v${npm_package_version}; npm publish; git push origin master",
     "start": "NODE_PATH=. budo --open example.js",
@@ -31,14 +31,15 @@
   },
   "homepage": "http://g14n.info/dextop",
   "devDependencies": {
-    "budo": "^10.0.4",
-    "dot-editorconfig": "^1.0.1",
-    "pre-commit": "^1.2.2",
-    "standa": "^1.1.0",
-    "uglify-es": "^3.2.1"
+    "budo": "^11.2.0",
+    "dot-editorconfig": "^1.1.0",
+    "standa": "^2.0.1",
+    "uglify-es": "^3.3.9"
   },
   "dependencies": {
-    "bindme": "^1.0.1",
-    "events": "^1.1.1"
+    "bindme": "^1.0.2",
+    "events": "^2.0.0",
+    "pdsp": "^0.1.0",
+    "static-props": "^1.1.1"
   }
 }
