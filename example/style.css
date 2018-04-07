@@ -1,0 +1,38 @@
+.dextop-content {
+  background-color: gold;
+  overflow: auto;
+
+  /* Disable text selection */
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+
+  /* Disable dragging */
+    -webkit-user-drag: none;
+            user-drag: none;
+
+  text-align: center;
+}
+
+html {
+  font-family: Verdana, Geneva, sans-serif;
+}
+
+h1 {
+  padding-left: 10px;
+  font-weight: lighter;
+}
+
+blockquote {
+  color: gray;
+}
+
+blockquote a {
+  color: tomato;
+}
+
+p {
+  padding-left: 17px;
+  max-width: 400px;
+}

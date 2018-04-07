@@ -1,10 +1,29 @@
 # dextop
 
-> is a window manager running in your browser
+> provides a minimal window manager in your browser
+
+[Installation](#installation) |
+[Example](#example) |
+[Usage](#usage) |
+[License](#license)
+
+## Installation
+
+With [npm](https://www.npmjs.com/) do
+
+```bash
+npm install dextop
+```
+
+or use a CDN like
+
+```html
+<script src="https://unpkg.com/dextop/dist/dextop.js"></script>
+```
 
 ## Example
 
-Try [Codepen demo] online, or the following locally
+Try [Codepen demo] online, see [example folder on GitHub][example], or do the following locally
 
 1. Clone [this repo](https://github.com/fibo/dextop).
 2. Install deps: `npm install`.
@@ -48,8 +67,8 @@ to provide the following options:
 | toolbarHeight | `28`                   |
 
 
-The `content` attribute holds a div with class `dextop-content`, you can
-optionally style with a CSS like the following.
+The `content` attribute holds a div which class is `dextop-content`, you
+can optionally style it with a CSS like the following.
 
 ```css
 .dextop-content {
@@ -89,3 +108,4 @@ The following events are emitted:
 
 [Codepen demo]: https://codepen.io/fibo/full/xPomej/ "Codepen demo"
 [EventEmitter]: https://www.npmjs.com/package/events "EventEmitter"
+[example]: https://github.com/fibo/dextop/tree/master/example "example folder on GitHub"
