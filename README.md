@@ -30,9 +30,7 @@ const myDiv = document.querySelector('#my-dextop-window')
 
 const dextopWin = new DextopWindow(myDiv, { width: 400, height: 200 })
 
-dextopWin.content.innerHTML = `
-<p>My content<p>
-`
+dextopWin.content.innerHTML = `<p>My content<p>`
 ```
 
 First constructor argument is a DOM element, second argument is an object
