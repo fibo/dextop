@@ -92,7 +92,31 @@ class DextopWindow extends EventEmitter {
 
   onContainerMouseenter () { this.show() }
 
-  onContainerMouseleave () { this.hide() }
+  onContainerMouseleave () {
+    const { isMoving, isResizing } = this
+
+    if (!isMoving || !isResizing) {
+      this.hide()
+    }
+  }
+
+  onResizerMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isResizing = true
+    this.previous = { clientX, clientY }
+  }
+
+  onToolbarMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isMoving = true
+    this.previous = { clientX, clientY }
+  }
 
   onWindowMousemove (event) {
     const { isMoving, isResizing } = this
@@ -126,24 +150,6 @@ class DextopWindow extends EventEmitter {
   onWindowMouseup () {
     this.stopMoving()
     this.stopResizing()
-  }
-
-  onResizerMousedown (event) {
-    pdsp(event)
-
-    const { clientX, clientY } = event
-
-    this.isResizing = true
-    this.previous = { clientX, clientY }
-  }
-
-  onToolbarMousedown (event) {
-    pdsp(event)
-
-    const { clientX, clientY } = event
-
-    this.isMoving = true
-    this.previous = { clientX, clientY }
   }
 
   move ({x, y}) {
