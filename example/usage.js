@@ -1,6 +1,7 @@
 const DextopWindow = require('dextop').Window
 
 var dextopWin = new DextopWindow(document.querySelector('#my-dextop-window'), {
+  autohide: true,
   height: 200,
   width: 400,
   x: 500,

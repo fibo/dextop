@@ -6,6 +6,7 @@ const staticProps = require('static-props')
 
 class DextopWindow extends EventEmitter {
   constructor (container, {
+    autohide = false,
     border = 1,
     color = 'rgba(0, 0, 0, 0.1)',
     width = 400, height = 300,
@@ -46,6 +47,7 @@ class DextopWindow extends EventEmitter {
     toolbar.style.height = `${toolbarHeight}px`
     container.appendChild(toolbar)
 
+    this.autohide = autohide
     this.border = border
     this.color = color
     this.isMoving = false
@@ -79,8 +81,12 @@ class DextopWindow extends EventEmitter {
     window.addEventListener('mousemove', this.onWindowMousemove)
     window.addEventListener('mouseup', this.onWindowMouseup)
 
-    // Start hidden.
-    this.hide()
+    // Start hidden if autohide is enabled.
+    if (autohide) {
+      this.hide()
+    } else {
+      this.show()
+    }
   }
 
   hide () {
@@ -91,9 +97,39 @@ class DextopWindow extends EventEmitter {
     this.toolbar.style['background-color'] = 'transparent'
   }
 
-  onContainerMouseenter () { this.show() }
+  onContainerMouseenter () {
+    if (this.autohide) {
+      this.show()
+    }
+  }
 
-  onContainerMouseleave () { this.hide() }
+  onContainerMouseleave () {
+    const { autohide, isMoving, isResizing } = this
+
+    if (!autohide) return
+
+    if (!isMoving || !isResizing) {
+      this.hide()
+    }
+  }
+
+  onResizerMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isResizing = true
+    this.previous = { clientX, clientY }
+  }
+
+  onToolbarMousedown (event) {
+    pdsp(event)
+
+    const { clientX, clientY } = event
+
+    this.isMoving = true
+    this.previous = { clientX, clientY }
+  }
 
   onWindowMousemove (event) {
     const { isMoving, isResizing } = this
@@ -127,24 +163,6 @@ class DextopWindow extends EventEmitter {
   onWindowMouseup () {
     this.stopMoving()
     this.stopResizing()
-  }
-
-  onResizerMousedown (event) {
-    pdsp(event)
-
-    const { clientX, clientY } = event
-
-    this.isResizing = true
-    this.previous = { clientX, clientY }
-  }
-
-  onToolbarMousedown (event) {
-    pdsp(event)
-
-    const { clientX, clientY } = event
-
-    this.isMoving = true
-    this.previous = { clientX, clientY }
   }
 
   move ({x, y}) {
